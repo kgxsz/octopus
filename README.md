@@ -1,3 +1,3 @@
 # Octopus
 
-##### A repository to experiment and mess around with reducers.
+##### A repository to experiment and mess around with reducers, threadpools, and spec.
