@@ -33,7 +33,7 @@
      (r/map inc)
      (r/fold +))
 
-; If you use fold on a non foldable collection, it will silently fallback to r/reduce
+; If you use fold on a non foldable collection, it will silently fallback to r/reduce.
 (->> '(1 2 3 4)
      (r/filter even?)
      (r/map inc)
