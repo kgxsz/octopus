@@ -45,18 +45,28 @@
 ; Now you can generate samples.
 (gen/sample (s/gen ::my-namespaced-keyword))
 
-;; But we've lost flexibility here, by enumerating the generated output, we've constrained ourselves.
-;; We can build up guided generators with fmap.
+; But we've lost flexibility here, by enumerating the generated output, we've constrained ourselves.
+; We can build up guided generators with fmap.
 (def my-namespaced-keyword-generator (gen/fmap #(keyword "my.domain" %)
                                                (gen/string-alphanumeric)))
 
-;; It works as expected.
+; It works as expected.
 (gen/sample my-namespaced-keyword-generator 5)
 
-;; Putting it all together.
+; Putting it all together.
 (s/def ::hello
   (s/with-gen #(clojure.string/includes? % "hello")
     #(gen/fmap (fn [[s1 s2]] (str s1 "hello" s2))
                (gen/tuple (gen/string-alphanumeric) (gen/string-alphanumeric)))))
 
 (gen/sample (s/gen ::hello))
+
+
+;; Ranged Generators
+
+; You can define ranges.
+(s/def ::dice-face (s/int-in 1 7))
+
+; Works as expected
+(gen/sample (s/gen ::dice-face))
+
