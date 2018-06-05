@@ -37,7 +37,8 @@
 
 ; You may redefine the original spec in terms of the narrower generator.
 (spec/def ::my-namespaced-keyword
-  (spec/with-gen (spec/and keyword? #(= (namespace %) "my.domain"))
+  (spec/with-gen
+    (spec/and keyword? #(= (namespace %) "my.domain"))
     #(spec/gen #{:my.domain/name :my.domain/occupation :my.domain/id})))
 
 ; The spec still works.
@@ -49,7 +50,7 @@
 ; But we've lost flexibility here, by enumerating the generated output, we've constrained ourselves.
 ; We can build up guided generators with fmap.
 (def my-namespaced-keyword-generator (spec.gen/fmap #(keyword "my.domain" %)
-                                               (spec.gen/string-alphanumeric)))
+                                                    (spec.gen/string-alphanumeric)))
 
 ; It works as expected.
 (spec.gen/sample my-namespaced-keyword-generator 5)
@@ -71,3 +72,31 @@
 ; Works as expected
 (spec.gen/sample (spec/gen ::dice-face))
 
+
+;; Intsrumentation and Testing
+
+; Let's start with a function.
+(defn ranged-rand
+  "Returns random int in range start <= rand < end"
+  [start end]
+  (+ start (long (rand (- end start)))))
+
+; We then spec it.
+(spec/fdef
+ ranged-rand
+ :args (spec/and (spec/cat :start int? :end int?)
+                 #(< (:start %) (:end %)))
+ :ret int?
+ :fn (spec/and #(>= (:ret %) (-> % :args :start))
+               #(< (:ret %) (-> % :args :end))))
+
+; Then we instrument it.
+(spec.test/instrument `ranged-rand)
+
+; Because it is instrumented, the args condition is checked, but not the others,
+; because validating the implementation should be done at testing time.
+(ranged-rand 5 3)
+
+; We can check that the ret and fn parts of the fdef are satisfied with a check
+; on the function with many different samples of args.
+(spec.test/check `ranged-rand)
