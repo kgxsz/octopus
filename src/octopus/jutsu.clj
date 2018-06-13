@@ -4,6 +4,7 @@
             [clj-time.coerce :as time.coerce]
             [clj-time.format :as time.format]))
 
+; 1525647600000 -- May 7th
 ; 1525734000000 -- May 8th
 ; 1528844400000 -- June 13th
 
@@ -20,7 +21,7 @@
 
 (jutsu/graph!
  "rr2"
- [{:x instants
+ [{:x (map #(-> % (- 1525647600000) (/ 86400000) float) instants) ;; 0 is May 7th
    :y (map #(-> %1 (- %2) (/ 86400000) int) instants dates)
    :mode "markers"
    :type "scatter"}])
