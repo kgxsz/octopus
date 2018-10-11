@@ -1,7 +1,8 @@
 (ns octopus.spec
   (:require [clojure.spec.gen.alpha :as spec.gen]
             [clojure.spec.alpha :as spec]
-            [clojure.spec.test.alpha :as spec.test]))
+            [clojure.spec.test.alpha :as spec.test]
+            [expound.alpha :as expound]))
 
 
 ;; Generators
@@ -29,7 +30,15 @@
 ; The spec works.
 (spec/valid? ::my-namespaced-keyword :my.domain/name)
 
-; But it's unlikely to generate a significant match.
+; You can explain the validity
+(spec/explain ::my-namespaced-keyword :my.domain/name)
+(spec/explain-str ::my-namespaced-keyword :my.domain/name)
+
+; You can explain the invalidity
+(spec/explain ::my-namespaced-keyword :your.domain/name)
+(spec/explain-str ::my-namespaced-keyword :your.domain/name)
+
+; The generator is unlikely to generate a significant match.
 (spec.gen/sample (spec/gen ::my-namespaced-keyword))
 
 ; So you can generate from a more narrow generator.
@@ -58,8 +67,9 @@
 ; Putting it all together.
 (spec/def ::hello
   (spec/with-gen #(clojure.string/includes? % "hello")
-    #(spec.gen/fmap (fn [[s1 s2]] (str s1 "hello" s2))
-               (spec.gen/tuple (gen/string-alphanumeric) (gen/string-alphanumeric)))))
+    #(spec.gen/fmap
+      (fn [[s1 s2]] (str s1 "hello" s2))
+      (spec.gen/tuple (spec.gen/string-alphanumeric) (spec.gen/string-alphanumeric)))))
 
 (spec.gen/sample (spec/gen ::hello))
 
@@ -100,3 +110,32 @@
 ; We can check that the ret and fn parts of the fdef are satisfied with a check
 ; on the function with many different samples of args.
 (spec.test/check `ranged-rand)
+
+
+;; Expound
+
+; Expound gives us nicer failure descriptions.
+(expound/expound string? 1)
+
+; Instead of calling spec's explain function, use expound's.
+(expound/expound ::my-namespaced-keyword :my.domain/thing)
+(expound/expound ::my-namespaced-keyword :your.domain/thing)
+
+; Instead of calling spec's explain-str function, use expound's.
+(expound/expound-str ::my-namespaced-keyword :my.domain/thing)
+(expound/expound-str ::my-namespaced-keyword :your.domain/thing)
+
+; It's easier if you simply set spec's explain-out var,
+; this can be done dynamically, or for the current thread.
+(spec/check-asserts true)
+(binding [spec/*explain-out* expound/printer]
+  (spec/assert ::my-namespaced-keyword :your.domain/thing))
+(alter-var-root #'spec/*explain-out* (constantly expound/printer))
+
+; To nicely format a test check, use explain-results
+(expound/explain-results (spec.test/check `ranged-rand))
+
+; You can also add nice error messages, instead of having the predicate printed
+(expound/defmsg ::my-namespaced-keyword "Should be a keyword with a namespace of my.domain")
+(expound/expound ::my-namespaced-keyword :your.domain/thing)
+
