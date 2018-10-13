@@ -5,4 +5,4 @@
                  [hswick/jutsu "0.1.2"]
                  [expound "0.7.1"]]
 
-  :profiles {:performance {:main ^:skip-aot octopus.performance}})
+  :profiles {:daemons {:main ^:skip-aot octopus.daemons}})
