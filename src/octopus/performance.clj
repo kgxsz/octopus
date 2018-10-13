@@ -131,7 +131,7 @@
         (mapv deref promises)
         (recur (conj promises (a/<!! c)))))))
 
-(time (launch-n-non-blocking-go-blocks 10000))
+(time (launch-n-non-blocking-go-blocks 1000))
 
 (time (launch-n-threads 1000 #(Thread/sleep 1000)))
 
