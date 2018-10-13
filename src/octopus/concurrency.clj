@@ -87,7 +87,7 @@
 ;; But let's try to push it a bit.
 (time (pipeline 9 {:blocking? true :parallelism 16})) ;; 1005msec
 
-;; We expect the parallelism to be the upper bound here
+;; We expect the parallelism to be the upper bound here.
 (time (pipeline 160 {:blocking? true :parallelism 16})) ;; 10013msec
 
 ;; With non blocking, the number 8 is the upper bound, not 16.
@@ -99,5 +99,5 @@
 ;; A little more.
 (time (pipeline 1280 {:blocking? true :parallelism 128})) ;; 10065msec
 
-;; We break things if we exceed the channel buffer of 1024
+;; We break things if we exceed the channel buffer of 1024.
 (time (pipeline 1025 {:blocking? true :parallelism 1025}))
