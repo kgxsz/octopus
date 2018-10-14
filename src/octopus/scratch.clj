@@ -44,3 +44,13 @@
                       )]
     )
   )
+;; Difficulties are that the pipeline itself is immediately returning, so you need to keep
+;; alive somehow until it is done. It gives a channel which closes when the pipeline has completed.
+;; But what does that mean? In some cases, the pipeline ends because the to-chan closes when it
+;; has exhausted the collection it took.
+
+;; What if the reporter was a non-daemon thread that waited for the death of the pipeline and could
+;; be interupted but a stop on the component. When the pipeline dies, the reported simply says that
+;; it is standing by. Would still need to understand the nature of the stop, who closes what.
+;; You probably don't want extract to close and end downstream pipelines becuase they may get goods
+;; from other sources.
